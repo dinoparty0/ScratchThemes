@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Student Banner Disabler",
+  "version": "1.0",
+  "description": "This disabled the student de-activation message on Scratch.",
+  "content_scripts": [
+    {
+      "matches": ["*://*.edu/*", "*://*/*"],
+      "css": ["hide-banner.css"],
+      "run_at": "document_start"
+    }
+  ]
+}
