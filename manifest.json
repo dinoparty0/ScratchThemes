@@ -5,7 +5,7 @@
   "description": "This disabled the student de-activation message on Scratch.",
   "content_scripts": [
     {
-      "matches": ["*://*.edu/*", "*://*/*"],
+      "matches": ["*://*.scratch.mit.edu/*", "*://*.scratch.org/*"],
       "css": ["hide-banner.css"],
       "run_at": "document_start"
     }
