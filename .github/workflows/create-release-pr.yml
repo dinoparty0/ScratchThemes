@@ -41,7 +41,7 @@ jobs:
         run: |
           # Opens the single rolling release PR from staging into production
           gh pr create \
-            --base production \
+            --base main \
             --head staging \
             --title "release: [${{ env.RELEASE_DATE }}]" \
             --body "## 📦 Rolling Release Bundle
