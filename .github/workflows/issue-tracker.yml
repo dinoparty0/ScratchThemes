@@ -1,0 +1,67 @@
+name: Issue tracker
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage-and-fix:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Auto Triage and Label Issue
+        id: triage
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          # Convert everything to lowercase for easier matching
+          CONTENT=$(echo "$ISSUE_TITLE $ISSUE_BODY" | tr '[:upper:]' '[:lower:]')
+          
+          LABEL_APPLIED="false"
+          
+          # Check for Bug
+          if [[ "$CONTENT" =~ "error" || "$CONTENT" =~ "crash" || "$CONTENT" =~ "broken" || "$CONTENT" =~ "fail" || "$CONTENT" =~ "bug" ]]; then
+            gh issue edit $ISSUE_NUMBER --add-label "bug"
+            echo "MATCHED_LABEL=bug" >> $GITHUB_ENV
+            LABEL_APPLIED="true"
+          fi
+          
+          # Check for Feat / Enhancement
+          if [[ "$CONTENT" =~ "add" || "$CONTENT" =~ "feature" || "$CONTENT" =~ "request" || "$CONTENT" =~ "new idea" || "$CONTENT" =~ "feat" ]]; then
+            gh issue edit $ISSUE_NUMBER --add-label "feat"
+            # Apply enhancement too since you use both
+            gh issue edit $ISSUE_NUMBER --add-label "enhancement"
+            LABEL_APPLIED="true"
+          fi
+          
+          # Check for Chore
+          if [[ "$CONTENT" =~ "clean up" || "$CONTENT" =~ "dependencies" || "$CONTENT" =~ "update" || "$CONTENT" =~ "config" || "$CONTENT" =~ "chore" ]]; then
+            gh issue edit $ISSUE_NUMBER --add-label "chore"
+            LABEL_APPLIED="true"
+          fi
+
+          # Catch-all: If no keywords matched, mark it as needs-triage
+          if [ "$LABEL_APPLIED" = "false" ]; then
+            gh issue edit $ISSUE_NUMBER --add-label "needs-triage"
+            gh issue comment $ISSUE_NUMBER --body "🤖 The automated triage system couldn't classify this issue. A maintainer will look at this shortly to update the label!"
+          fi
+
+      - name: Safe AI Auto-Fix PR Generation
+        if: env.MATCHED_LABEL == 'bug'
+        uses: Codium-ai/pr-agent@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_AGENT.CUSTOM_LABELS: "bug"
+          AUTO_FIX.TARGET_BRANCH: "staging" 
