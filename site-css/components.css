@@ -1,0 +1,5 @@
+/* CSS for components across the Scratch site (e.g. banners, world map) */
+
+.title-banner.student-deactivation-banner {
+  display: none !important;
+}

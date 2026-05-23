@@ -6,8 +6,14 @@
   "content_scripts": [
     {
       "matches": ["*://*.scratch.mit.edu/*", "*://*.scratch.org/*"],
-      "css": ["hide-banner.css"],
+      "css": ["imports.css"],
       "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["site-css/*.css"],
+      "matches": ["*://*.scratch.mit.edu/*", "*://*.scratch.org/*"]
     }
   ]
 }
