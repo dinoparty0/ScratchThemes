@@ -1,68 +1,61 @@
-name: Staging Deployment and Production PR
+name: Locked Main Release Pipeline
 
 on:
   push:
     branches:
-      - main # Triggers automatically when code hits main (via direct push or PR merge)
+      - dev
 
 jobs:
-  deploy-and-pr:
+  rolling-release-pr:
     runs-on: ubuntu-latest
     
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
 
     steps:
-      - name: Checkout main branch
+      - name: Checkout dev branch
         uses: actions/checkout@v4
         with:
-          ref: main
-          fetch-depth: 0 # Fetches full history so git can track changes
+          ref: dev
+          fetch-depth: 0
 
-      - name: Setup Git User Info
+      - name: Get Current Date
+        id: get_date
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          echo "RELEASE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      - name: Sync Staging Branch with Main
-        run: |
-          # Create or switch to the staging branch, reset it to match main exactly, and force push it
-          git checkout -b staging 2>/dev/null || git checkout staging
-          git reset --hard main
-          git push origin staging --force
-
-      - name: Check for Existing PR to Production
+      - name: Check for Existing Open Release PR
         id: check_pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # See if there is already an open PR from staging to production
-          EXISTING_PR=$(gh pr list --base production --head staging --json number --jq '.[0].number')
+          # Look for an already open PR from dev into main
+          EXISTING_PR=$(gh pr list --base main --head dev --json number --jq '.[0].number')
           echo "PR_NUMBER=$EXISTING_PR" >> $GITHUB_ENV
 
-      - name: Open Release PR to Production
+      - name: Create One Rolling Release PR
         if: env.PR_NUMBER == ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # If no PR exists, open a brand new one with an auto-generated changelog!
+          # Opens the single rolling release PR from dev into main
           gh pr create \
-            --base production \
-            --head staging \
-            --title "🚀 Release: Sync Staging to Production" \
-            --body "## 📦 Automated Release Pipeline
-            This PR was automatically generated because new code was merged into \`main\`.
+            --base main \
+            --head dev \
+            --title "release: [${{ env.RELEASE_DATE }}]" \
+            --body "## 📦 Rolling Release Bundle
+            This is the single rolling release PR. All features merged into \`dev\` will stack up here automatically.
             
-            ### 🛠️ Next Steps:
-            1. Test the changes on your staging environment.
-            2. Review the auto-generated commit list below.
-            3. Squash-merge this PR into \`production\` to launch live!"
+            ### 🛠️ Instructions:
+            * Do NOT close this PR if you have more features coming.
+            * Your \`main\` branch code tab is completely hidden and safe right now!
+            * When you are ready to push everything live, merge this PR into \`main\`!"
 
-      - name: Comment on Existing PR
+      - name: Alert on Existing PR Update
         if: env.PR_NUMBER != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # If a PR is already open, just drop a comment letting you know staging updated!
-          gh pr comment ${{ env.PR_NUMBER }} --body "🔄 Staging has been updated with the latest changes from \`main\`. This PR is updated and ready for review!"
+          # If the PR is already open, just log a comment.
+          gh pr comment ${{ env.PR_NUMBER }} --body "🔄 New commits have been merged into \`dev\`. They have been automatically added to this rolling PR bundle!"
