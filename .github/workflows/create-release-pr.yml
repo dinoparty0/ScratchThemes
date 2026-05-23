@@ -1,18 +1,18 @@
-name: Locked Production Release Pipeline
+name: Locked Main Release Pipeline with Sidebar Releases
 
 on:
   push:
     branches:
       - staging
+      - main
 
 jobs:
   rolling-release-pr:
+    if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
-    
     permissions:
       contents: read
       pull-requests: write
-
     steps:
       - name: Checkout staging branch
         uses: actions/checkout@v4
@@ -30,8 +30,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Look for an already open PR from staging into production
-          EXISTING_PR=$(gh pr list --base production --head staging --json number --jq '.[0].number')
+          EXISTING_PR=$(gh pr list --base main --head staging --json number --jq '.[0].number')
           echo "PR_NUMBER=$EXISTING_PR" >> $GITHUB_ENV
 
       - name: Create One Rolling Release PR
@@ -39,23 +38,50 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Opens the single rolling release PR from staging into production
           gh pr create \
             --base main \
             --head staging \
             --title "release: [${{ env.RELEASE_DATE }}]" \
+            --reviewer "dinoparty0,rosics-code" \
             --body "## 📦 Rolling Release Bundle
             This is the single rolling release PR. All features merged into \`staging\` will stack up here automatically.
             
             ### 🛠️ Instructions:
             * Do NOT close this PR if you have more features coming.
-            * Your \`production\` branch code tab is completely hidden and safe right now!
-            * When you are ready to push everything live, merge this PR into \`production\`!"
+            * When you are ready to push everything live, merge this PR into \`main\`! 
+            * **Merging will automatically create an official GitHub Sidebar Release!**"
 
       - name: Alert on Existing PR Update
         if: env.PR_NUMBER != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # If the PR is already open, just log a comment.
           gh pr comment ${{ env.PR_NUMBER }} --body "🔄 New commits have been merged into \`staging\`. They have been automatically added to this rolling PR bundle!"
+
+  create-sidebar-release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Get Current Date
+        id: get_date
+        run: |
+          echo "RELEASE_TAG=v$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
+          echo "RELEASE_NAME=Release [$(date +'%Y-%m-%d')]" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ env.RELEASE_TAG }}" \
+            --target main \
+            --title "${{ env.RELEASE_NAME }}" \
+            --generate-notes \
+            --notes "🚀 This release contains all the bundled features successfully merged from the staging branch."
