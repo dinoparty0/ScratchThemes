@@ -1,0 +1,68 @@
+name: Staging Deployment and Production PR
+
+on:
+  push:
+    branches:
+      - main # Triggers automatically when code hits main (via direct push or PR merge)
+
+jobs:
+  deploy-and-pr:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0 # Fetches full history so git can track changes
+
+      - name: Setup Git User Info
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync Staging Branch with Main
+        run: |
+          # Create or switch to the staging branch, reset it to match main exactly, and force push it
+          git checkout -b staging 2>/dev/null || git checkout staging
+          git reset --hard main
+          git push origin staging --force
+
+      - name: Check for Existing PR to Production
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # See if there is already an open PR from staging to production
+          EXISTING_PR=$(gh pr list --base production --head staging --json number --jq '.[0].number')
+          echo "PR_NUMBER=$EXISTING_PR" >> $GITHUB_ENV
+
+      - name: Open Release PR to Production
+        if: env.PR_NUMBER == ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # If no PR exists, open a brand new one with an auto-generated changelog!
+          gh pr create \
+            --base production \
+            --head staging \
+            --title "🚀 Release: Sync Staging to Production" \
+            --body "## 📦 Automated Release Pipeline
+            This PR was automatically generated because new code was merged into \`main\`.
+            
+            ### 🛠️ Next Steps:
+            1. Test the changes on your staging environment.
+            2. Review the auto-generated commit list below.
+            3. Squash-merge this PR into \`production\` to launch live!"
+
+      - name: Comment on Existing PR
+        if: env.PR_NUMBER != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # If a PR is already open, just drop a comment letting you know staging updated!
+          gh pr comment ${{ env.PR_NUMBER }} --body "🔄 Staging has been updated with the latest changes from \`main\`. This PR is updated and ready for review!"
