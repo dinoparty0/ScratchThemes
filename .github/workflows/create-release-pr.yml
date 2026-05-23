@@ -49,13 +49,6 @@ jobs:
             * Do NOT close this PR if you have more features coming.
             * When you are ready to push everything live, merge this PR into \`main\`!"
 
-      - name: Alert on Existing PR Update
-        if: env.PR_NUMBER != ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr comment ${{ env.PR_NUMBER }} --body "🔄 New commits have been merged into \`staging\`."
-
   create-sidebar-release:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
