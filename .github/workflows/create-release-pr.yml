@@ -1,0 +1,61 @@
+name: Locked Main Release Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  rolling-release-pr:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout dev branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Get Current Date
+        id: get_date
+        run: |
+          echo "RELEASE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Check for Existing Open Release PR
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Look for an already open PR from dev into main
+          EXISTING_PR=$(gh pr list --base main --head dev --json number --jq '.[0].number')
+          echo "PR_NUMBER=$EXISTING_PR" >> $GITHUB_ENV
+
+      - name: Create One Rolling Release PR
+        if: env.PR_NUMBER == ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Opens the single rolling release PR from dev into main
+          gh pr create \
+            --base main \
+            --head dev \
+            --title "release: [${{ env.RELEASE_DATE }}]" \
+            --body "## 📦 Rolling Release Bundle
+            This is the single rolling release PR. All features merged into \`dev\` will stack up here automatically.
+            
+            ### 🛠️ Instructions:
+            * Do NOT close this PR if you have more features coming.
+            * Your \`main\` branch code tab is completely hidden and safe right now!
+            * When you are ready to push everything live, merge this PR into \`main\`!"
+
+      - name: Alert on Existing PR Update
+        if: env.PR_NUMBER != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # If the PR is already open, just log a comment.
+          gh pr comment ${{ env.PR_NUMBER }} --body "🔄 New commits have been merged into \`dev\`. They have been automatically added to this rolling PR bundle!"
