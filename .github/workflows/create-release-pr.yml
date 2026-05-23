@@ -14,10 +14,9 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - name: Checkout staging branch
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: staging
           fetch-depth: 0
 
       - name: Get Current Date
@@ -33,6 +32,11 @@ jobs:
           EXISTING_PR=$(gh pr list --base main --head staging --json number --jq '.[0].number')
           echo "PR_NUMBER=$EXISTING_PR" >> $GITHUB_ENV
 
+      - name: Generate Commit Log for PR
+        if: env.PR_NUMBER == ''
+        run: |
+          echo "COMMIT_LOG=$(git log origin/main..origin/staging --oneline --pretty=format:'* %h - %s (%an)')" >> $GITHUB_ENV
+
       - name: Create One Rolling Release PR
         if: env.PR_NUMBER == ''
         env:
@@ -43,11 +47,14 @@ jobs:
             --head staging \
             --title "release: [${{ env.RELEASE_DATE }}]" \
             --body "## 📦 Release Bundle
-            All features merged into \`staging\` will show up here automatically.
-            
-            ### 🛠️ Instructions:
-            * Do NOT close this PR if you have more features coming.
-            * When you are ready to push everything live, merge this PR into \`main\`!"
+          All features merged into \`staging\` will show up here automatically.
+          
+          ### 🔀 Commits included in this release:
+          ${{ env.COMMIT_LOG }}
+          
+          ### 🛠️ Instructions:
+          * Do NOT close this PR if you have more features coming.
+          * When you are ready to push everything live, merge this PR into \`main\`!"
 
   create-sidebar-release:
     if: github.ref == 'refs/heads/main'
@@ -55,17 +62,19 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout main branch
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: main
           fetch-depth: 0
 
-      - name: Get Current Date
-        id: get_date
+      - name: Get Current Date and Changelog
+        id: get_info
         run: |
           echo "RELEASE_TAG=v$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
           echo "RELEASE_NAME=Release [$(date +'%Y-%m-%d')]" >> $GITHUB_ENV
+          # Fetch the last tag to find the diff, or fall back to the first commit if no tags exist
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          echo "COMMIT_LOG=$(git log $LAST_TAG..HEAD --oneline --pretty=format:'* %h - %s (%an)')" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         env:
@@ -74,4 +83,7 @@ jobs:
           gh release create "${{ env.RELEASE_TAG }}" \
             --target main \
             --title "${{ env.RELEASE_NAME }}" \
-            --notes "🚀 Production deployment successfully completed on $(date +'%Y-%m-%d'). All bundled features from staging are now live!"
+            --notes "🚀 Production deployment successfully completed on $(date +'%Y-%m-%d').
+            
+            ### 📝 Changelog:
+            ${{ env.COMMIT_LOG }}"
