@@ -6,10 +6,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://scratch.mit.edu",
         "https://scratch.mit.edu/*",
         "https://*.scratch.mit.edu/*",
-        "https://scratch.org",
         "https://scratch.org/*",
         "https://*.scratch.org/*"
       ],
@@ -24,11 +22,9 @@
     {
       "resources": ["site-css/*.css"],
       "matches": [
-        "https://scratch.mit.edu",
         "https://scratch.mit.edu/*",
         "https://*.scratch.mit.edu/*",
         "https://scratch.org/*",
-        "https://scratch.org",
         "https://*.scratch.org/*"
       ]
     }
