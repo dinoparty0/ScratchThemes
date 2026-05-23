@@ -48,7 +48,7 @@ jobs:
             
             ### 🛠️ Instructions:
             * Do NOT close this PR if you have more features coming.
-            * When you are ready to push everything live, merge this PR into \`main\`! 
+            * When you are ready to push everything live, merge this PR into \`main\`!"
 
       - name: Alert on Existing PR Update
         if: env.PR_NUMBER != ''
