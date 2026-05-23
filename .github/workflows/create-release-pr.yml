@@ -83,5 +83,4 @@ jobs:
           gh release create "${{ env.RELEASE_TAG }}" \
             --target main \
             --title "${{ env.RELEASE_NAME }}" \
-            --generate-notes \
-            --notes "🚀 This release contains all the bundled features successfully merged from the staging branch."
+            --notes "🚀 Production deployment successfully completed on $(date +'%Y-%m-%d'). All bundled features from staging are now live!"
