@@ -2,12 +2,12 @@ name: Issue and PR Locking System
 
 on:
   issues:
-    types: [closed]
+    types: [opened, reopened, closed]
   pull_request:
-    types: [closed]
+    types: [opened, reopened, closed]
 
 jobs:
-  lock-closed-item:
+  lock-unlock-item:
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -18,18 +18,38 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Lock Closed Issue
-        if: github.event.issue != ''
+      - name: Buffer Fast Actions
+        run: sleep 5
+
+      # === ISSUE ACTIONS ===
+      - name: Lock Issue
+        if: github.event.issue != '' && github.event.action == 'closed'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           gh issue lock $ISSUE_NUMBER
 
-      - name: Lock Closed PR
-        if: github.event.pull_request != ''
+      - name: Unlock Issue
+        if: github.event.issue != '' && (github.event.action == 'opened' || github.event.action == 'reopened')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue unlock $ISSUE_NUMBER
+
+      - name: Lock PR
+        if: github.event.pull_request != '' && github.event.action == 'closed'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           gh pr lock $PR_NUMBER
+
+      - name: Unlock PR
+        if: github.event.pull_request != '' && (github.event.action == 'opened' || github.event.action == 'reopened')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr unlock $PR_NUMBER
