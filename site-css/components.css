@@ -4,19 +4,15 @@
   display: none !important;
 }
 
-.feature-callout-popover_popover- {
+[class*="feature-callout-popover_popover"] {
   display: none !important;
 }
 
-.feature-callout-popover_popover_m7c53.box_box_bP3Aq {
+[class*="modal-with-arrow_arrow"][class*="feature-callout-popover_arrow"] {
   display: none !important;
 }
 
-.modal-with-arrow_arrow_D0RMy.feature-callout-popover_arrow_S\+JUZ {
-  display: none !important;
-}
-
-.stage-header_stage-button-highlighted\+MwOS {
+[class*="stage-header_stage-button-highlighted"] {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
