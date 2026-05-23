@@ -12,8 +12,12 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
+      contents: read
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Lock Closed Issue
         if: github.event.issue != ''
         env:
