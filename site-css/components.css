@@ -17,3 +17,7 @@
   outline: none !important;
   box-shadow: none !important;
 }
+
+#navigation {
+  background-color: hsl(211.28deg 60% 60%);
+}
