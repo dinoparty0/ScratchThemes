@@ -1,9 +1,9 @@
-name: Locked Main Release Pipeline
+name: Locked Production Release Pipeline
 
 on:
   push:
     branches:
-      - dev
+      - staging
 
 jobs:
   rolling-release-pr:
@@ -14,10 +14,10 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Checkout dev branch
+      - name: Checkout staging branch
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: staging
           fetch-depth: 0
 
       - name: Get Current Date
@@ -30,8 +30,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Look for an already open PR from dev into main
-          EXISTING_PR=$(gh pr list --base main --head dev --json number --jq '.[0].number')
+          # Look for an already open PR from staging into production
+          EXISTING_PR=$(gh pr list --base production --head staging --json number --jq '.[0].number')
           echo "PR_NUMBER=$EXISTING_PR" >> $GITHUB_ENV
 
       - name: Create One Rolling Release PR
@@ -39,18 +39,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Opens the single rolling release PR from dev into main
+          # Opens the single rolling release PR from staging into production
           gh pr create \
-            --base main \
-            --head dev \
+            --base production \
+            --head staging \
             --title "release: [${{ env.RELEASE_DATE }}]" \
             --body "## 📦 Rolling Release Bundle
-            This is the single rolling release PR. All features merged into \`dev\` will stack up here automatically.
+            This is the single rolling release PR. All features merged into \`staging\` will stack up here automatically.
             
             ### 🛠️ Instructions:
             * Do NOT close this PR if you have more features coming.
-            * Your \`main\` branch code tab is completely hidden and safe right now!
-            * When you are ready to push everything live, merge this PR into \`main\`!"
+            * Your \`production\` branch code tab is completely hidden and safe right now!
+            * When you are ready to push everything live, merge this PR into \`production\`!"
 
       - name: Alert on Existing PR Update
         if: env.PR_NUMBER != ''
@@ -58,4 +58,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # If the PR is already open, just log a comment.
-          gh pr comment ${{ env.PR_NUMBER }} --body "🔄 New commits have been merged into \`dev\`. They have been automatically added to this rolling PR bundle!"
+          gh pr comment ${{ env.PR_NUMBER }} --body "🔄 New commits have been merged into \`staging\`. They have been automatically added to this rolling PR bundle!"
