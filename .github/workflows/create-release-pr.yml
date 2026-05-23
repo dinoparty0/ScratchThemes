@@ -1,4 +1,4 @@
-name: Locked Main Release Pipeline with Sidebar Releases
+name: Release System
 
 on:
   push:
@@ -42,7 +42,6 @@ jobs:
             --base main \
             --head staging \
             --title "release: [${{ env.RELEASE_DATE }}]" \
-            --reviewer "dinoparty0,rosics-code" \
             --body "## 📦 Release Bundle
             All features merged into \`staging\` will show up here automatically.
             
