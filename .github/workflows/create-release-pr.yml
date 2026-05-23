@@ -1,4 +1,4 @@
-name: Locked Main Release Pipeline with Sidebar Releases
+name: Release System
 
 on:
   push:
