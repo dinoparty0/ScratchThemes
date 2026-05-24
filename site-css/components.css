@@ -1,9 +1,5 @@
 /* CSS for components across the Scratch site (e.g. banners, world map) */
 
-.student-deactivation-banner {
-  display: none !important;
-}
-
 [class*="feature-callout-popover_popover"] {
   display: none !important;
 }

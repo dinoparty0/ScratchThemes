@@ -7,18 +7,34 @@
     "scripting",
     "tabs"
   ],
+  "action": {
+    "default_popup": "www/popup/popup.html"
+  },
   "host_permissions": [
     "https://scratch.mit.edu/*",
     "https://*.scratch.mit.edu/*",
     "https://scratch.org/*",
     "https://*.scratch.org/*"
   ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://scratch.mit.edu/*",
+        "https://*.scratch.mit.edu/*",
+        "https://scratch.org/*",
+        "https://*.scratch.org/*"
+      ],
+      "css": ["site-css/components.css"],
+      "js": ["site-js/components.js"],
+      "run_at": "document_end"
+    }
+  ],
   "background": {
     "service_worker": "background.js"
   },
   "web_accessible_resources": [
     {
-      "resources": ["site-css/*.css"],
+      "resources": ["site-css/*.css", "site-js/*.js"],
       "matches": ["<all_urls>"]
     }
   ]
