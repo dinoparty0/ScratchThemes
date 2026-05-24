@@ -21,7 +21,6 @@ jobs:
       - name: Buffer Fast Actions
         run: sleep 5
 
-      # === ISSUE ACTIONS ===
       - name: Lock Issue
         if: github.event.issue != '' && github.event.action == 'closed'
         env:
