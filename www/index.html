@@ -1,53 +1,65 @@
 <!DOCTYPE html>
 <html>
-<title>Scratch Theme</title>
+ <head>
+  <style>
+  <title>Scratch Themes</title>
+ body {
+  margin: 0;
+  /* BTW ROSICS sans-serif ic arial not  installed */
+  font-family: Arial, sans-serif;
+  background-color: #1e1e1e
+ }
+ .navigation {
+  background-color: #242424;
+  padding: 15px;
+ }
+ .navigation a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+ }
+ .navigation a:hover {
+  color: #e3e3e3
+ }
+ /* I had no idea what your other visited way was, didn't learn that lol */
+ .navigation a:visited {
+  color:white
+ }
+ .content {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+ }
+ .card {
+  background-color: #363636;
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  width: 220px;
+  transition: transform 0.2s ease
+ }
+ .card:hover {
+  transform: translateY(-4px);
+ }
+
+ .card h3 {
+  margin-top: 0;
+ }
+</style>
+ </head>
 <body>
 <div class="navigation">
 <a href="/">Home</a>
 </div>
 <div class="content">
- <div class="1">
+ <div class="card">
   <h3>Style your Scratch</h3>
-  <p>description</p>
+  <p>Cusomize colors, themes, and layout for Scratch</p>
  </div>
- <div class="2">
+ <div class="card">
   <h3>Upgrade your Scratch</h3>
-  <p>description</p>
+  <p>Add useful tools to improve Scratch</p>
  </div>
 </div>
 </body>
-<style>
-  .navigation {
-    background-color: #242424;
-    padding: 15px 15px;
-    margin: -10px;
-  }
-  
-  a {
-    color: white;
-
-  &:hover {
-    color: #e3e3e3;
-    }
-    
-  &:visited {
-   color: white;
-    }
-  }
-  
-  .content {
-   display: inline-flex;
-   gap: 0;
-  }
-  
-  .content div {
-   background-color: #363636 !important;
-   color: white;
-   padding: 10px 10px;
-   margin-left: 10px;
-   position: relative;
-   bottom: -15px;
-   left: -10px;
-  }
-</style>
 </html>
