@@ -19,5 +19,3 @@ observer.observe(document.body, {
  childList: true,
  subtree: true
 });
-
-a = 3; }
