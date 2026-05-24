@@ -10,6 +10,11 @@ jobs:
   review-and-test:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -22,7 +27,18 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    # Step 4: Run the ultimate code review (Lints HTML, CSS, and JS)
-    - name: Run Code Linting (Review)
-      run: npm run lint
-      continue-on-error: false
+    - name: Review HTML Files
+      run: npm run lint:html
+
+    - name: Review CSS Files
+      uses: stylelint/actions-stylelint@v2
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        reporter: github-pr-review
+
+    - name: Review JS Files
+      uses: reviewdog/action-eslint@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        reporter: github-pr-review
+        eslint_flags: "site-js/**/*.js"
