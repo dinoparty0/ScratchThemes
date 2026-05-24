@@ -31,10 +31,11 @@ jobs:
       run: npm run lint:html
 
     - name: Review CSS Files
-      uses: stylelint/actions-stylelint@v2
+      uses: reviewdog/action-stylelint@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         reporter: github-pr-review
+        stylelint_flags: "**/*.css"
 
     - name: Review JS Files
       uses: reviewdog/action-eslint@v1
