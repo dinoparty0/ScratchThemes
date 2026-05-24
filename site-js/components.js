@@ -11,7 +11,7 @@
 
   removeComponents();
 
-  let observer = new MutationObserver(function(mutations) {
+  let observer = new MutationObserver(function() {
     removeComponents();
   });
 
