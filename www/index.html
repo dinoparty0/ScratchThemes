@@ -1,5 +1,53 @@
+<!DOCTYPE html>
 <html>
 <title>Scratch Theme</title>
 <body>
+<div class="navigation">
+<a href="/">Home</a>
+</div>
+<div class="content">
+ <div class="1">
+  <h3>Style your Scratch</h3>
+  <p>description</p>
+ </div>
+ <div class="2">
+  <h3>Upgrade your Scratch</h3>
+  <p>description</p>
+ </div>
+</div>
 </body>
+<style>
+  .navigation {
+    background-color: #242424;
+    padding: 15px 15px;
+    margin: -10px;
+  }
+  
+  a {
+    color: white;
+
+  &:hover {
+    color: #e3e3e3;
+    }
+    
+  &:visited {
+   color: white;
+    }
+  }
+  
+  .content {
+   display: inline-flex;
+   gap: 0;
+  }
+  
+  .content div {
+   background-color: #363636 !important;
+   color: white;
+   padding: 10px;
+   margin-left: 10px;
+   position: relative;
+   bottom: -15px;
+   left: -10px;
+  }
+</style>
 </html>
