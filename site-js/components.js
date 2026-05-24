@@ -1,3 +1,5 @@
+/* JS for components across the Scratch site (e.g. banners, world map) */
+
 function removeComponents() {
 const studentBanner = document.querySelectorAll('.student-deactivation-banner');
 
