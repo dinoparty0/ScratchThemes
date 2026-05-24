@@ -9,12 +9,6 @@
     }); 
   }
 
-studentBanner.forEach(function(el) {
-  el.remove('.student-deactivation-banner');
-  });
-  
-}
-
 removeComponents();
 
   let observer = new MutationObserver(function() {
