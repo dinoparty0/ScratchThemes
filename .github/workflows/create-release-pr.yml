@@ -19,47 +19,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Calculate Next SemVer Version via Labels
-        id: get_version
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get Current Date
+        id: get_date
         run: |
-          TODAY=$(date +'%Y-%m-%d')
-          echo "RELEASE_DATE=$TODAY" >> $GITHUB_ENV
-          
-          LAST_PR_JSON=$(gh pr list --base main --head staging --state closed --search "release:" --limit 1 --json title,labels)
-          
-          if [ -z "$LAST_PR_JSON" ] || [ "$LAST_PR_JSON" = "[]" ]; then
-            NEXT_VERSION="1.0.0"
-          else
-            LAST_PR_TITLE=$(echo "$LAST_PR_JSON" | jq -r '.[0].title')
-            PR_LABELS=$(echo "$LAST_PR_JSON" | jq -r '.[0].labels[].name' | tr '[:upper:]' '[:lower:]')
-            
-            CURRENT_VERSION=$(echo "$LAST_PR_TITLE" | cut -d'[' -f2 | cut -d' ' -f1)
-            
-            if [ -z "$CURRENT_VERSION" ]; then
-              NEXT_VERSION="1.0.0"
-            else
-              IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
-              
-              [ -z "$major" ] && major=1
-              [ -z "$minor" ] && minor=0
-              [ -z "$patch" ] && patch=0
-              
-              if [[ "$PR_LABELS" =~ "major" ]]; then
-                NEXT_MAJOR=$((major + 1))
-                NEXT_VERSION="$NEXT_MAJOR.0.0"
-              elif [[ "$PR_LABELS" =~ "minor" ]]; then
-                NEXT_MINOR=$((minor + 1))
-                NEXT_VERSION="$major.$NEXT_MINOR.0"
-              else
-                NEXT_PATCH=$((patch + 1))
-                NEXT_VERSION="$major.$minor.$NEXT_PATCH"
-              fi
-            fi
-          fi
-          
-          echo "RELEASE_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+          echo "RELEASE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Check for Existing Open Release PR
         id: check_pr
@@ -86,8 +49,8 @@ jobs:
           gh pr create \
             --base main \
             --head staging \
-            --title "release: [${{ env.RELEASE_VERSION }} (${{ env.RELEASE_DATE }})]" \
-            --body "## All features merged into \`staging\` will show up here automatically.
+            --title "release: ${{ env.RELEASE_DATE }}" \
+            --body "All features merged into \`staging\` will show up here automatically.
           ### 🔀 Commits included in this release:
           $COMMIT_LOG"
 
@@ -98,7 +61,7 @@ jobs:
           COMMIT_LOG: ${{ steps.gen_log.outputs.COMMIT_LOG }}
         run: |
           gh pr edit ${{ env.PR_NUMBER }} \
-            --title "release: [${{ env.RELEASE_VERSION }} (${{ env.RELEASE_DATE }})]" \
+            --title "release: ${{ env.RELEASE_DATE }}" \
             --body "All features merged into \`staging\` will show up here automatically.
           ### 🔀 Commits included in this release:
           $COMMIT_LOG"
