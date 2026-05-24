@@ -20,4 +20,4 @@ observer.observe(document.body, {
  subtree: true
 });
 
-a = 3;
+a = 3; }
