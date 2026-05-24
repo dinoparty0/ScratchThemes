@@ -4,9 +4,9 @@
   function removeComponents() {
     let studentBanners = document.querySelectorAll('.student-deactivation-banner');
     
-    for (let i = 0; i < studentBanners.length; i++) {
-      studentBanners[i].remove();
-    }
+    studentBanners.forEach(function(el) {
+        el.remove('.student-deactivation-banner');
+    }); 
   }
 
   removeComponents();
