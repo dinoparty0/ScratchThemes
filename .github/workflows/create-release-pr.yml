@@ -19,10 +19,48 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get Current Date
-        id: get_date
+      - name: Calculate Next SemVer Version via Labels
+        id: get_version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "RELEASE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+          TODAY=$(date +'%Y-%m-%d')
+          echo "RELEASE_DATE=$TODAY" >> $GITHUB_ENV
+          
+          LAST_PR_JSON=$(gh pr list --base main --head staging --state closed --search "release:" --limit 1 --json title,labels)
+          
+          if [ -z "$LAST_PR_JSON" ] || [ "$LAST_PR_JSON" = "[]" ]; then
+            # No previous release PR found, start at 1.0.0
+            NEXT_VERSION="1.0.0"
+          else
+            LAST_PR_TITLE=$(echo "$LAST_PR_JSON" | jq -r '.[0].title')
+            # Extract labels into a lowercase string space-separated list
+            PR_LABELS=$(echo "$LAST_PR_JSON" | jq -r '.[0].labels[].name' | tr '[:upper:]' '[:lower:]')
+            
+            CURRENT_VERSION=$(echo "$LAST_PR_TITLE" | sed -n 's/.*release: \[\([0-9.]*\).*/\1/p')
+            
+            if [ -z "$CURRENT_VERSION" ]; then
+              NEXT_VERSION="1.0.0"
+            else
+              IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+              
+              if [[ "$PR_LABELS" =~ "major" ]]; then
+                # Major bump: 1.4.2 -> 2.0.0
+                NEXT_MAJOR=$((major + 1))
+                NEXT_VERSION="$NEXT_MAJOR.0.0"
+              elif [[ "$PR_LABELS" =~ "minor" ]]; then
+                # Minor bump: 1.4.2 -> 1.5.0
+                NEXT_MINOR=$((minor + 1))
+                NEXT_VERSION="$major.$NEXT_MINOR.0"
+              else
+                # Default Patch bump: 1.4.2 -> 1.4.3
+                NEXT_PATCH=$((patch + 1))
+                NEXT_VERSION="$major.$minor.$NEXT_PATCH"
+              fi
+            fi
+          fi
+          
+          echo "RELEASE_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
 
       - name: Check for Existing Open Release PR
         id: check_pr
@@ -35,7 +73,6 @@ jobs:
       - name: Generate Commit Log for PR
         id: gen_log
         run: |
-          # Use a multiline output to safely pass the git log without truncation or syntax breaks
           echo "COMMIT_LOG<<EOF" >> $GITHUB_OUTPUT
           git log origin/main..origin/staging --oneline --pretty=format:'* %h - %s (%an)' >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
@@ -50,16 +87,10 @@ jobs:
           gh pr create \
             --base main \
             --head staging \
-            --title "release: [${{ env.RELEASE_DATE }}]" \
-            --body "## 📦 Release Bundle
-          All features merged into \`staging\` will show up here automatically.
-          
+            --title "release: [${{ env.RELEASE_VERSION }} (${{ env.RELEASE_DATE }})]" \
+            --body "## All features merged into \`staging\` will show up here automatically.
           ### 🔀 Commits included in this release:
-          $COMMIT_LOG
-          
-          ### 🛠️ Instructions:
-          * Do NOT close this PR if you have more features coming.
-          * When you are ready to push everything live, merge this PR into \`main\`!"
+          $COMMIT_LOG"
 
       - name: Update Existing Release PR Body
         if: env.PR_NUMBER != ''
