@@ -17,9 +17,6 @@ studentBanner.forEach(function(el) {
 
 removeComponents();
 
-const observer = new MutationObserver(function() {
-  removeComponents();
-
   let observer = new MutationObserver(function() {
     removeComponents();
   });
