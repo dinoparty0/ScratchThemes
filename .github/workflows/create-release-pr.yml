@@ -68,16 +68,10 @@ jobs:
           COMMIT_LOG: ${{ steps.gen_log.outputs.COMMIT_LOG }}
         run: |
           gh pr edit ${{ env.PR_NUMBER }} \
-            --body "## 📦 Release Bundle
-          All features merged into \`staging\` will show up here automatically.
-          
+            --body "All features merged into \`staging\` will show up here automatically.
           ### 🔀 Commits included in this release:
-          $COMMIT_LOG
+          $COMMIT_LOG"
           
-          ### 🛠️ Instructions:
-          * Do NOT close this PR if you have more features coming.
-          * When you are ready to push everything live, merge this PR into \`main\`!"
-
   create-sidebar-release:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
