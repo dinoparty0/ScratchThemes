@@ -11,7 +11,7 @@ studentBanner.forEach(function(el) {
 
 removeComponents();
 
-const observer = new MutationObserver(function(mutations) {
+const observer = new MutationObserver(function() {
   removeComponents();
 });
 
@@ -19,3 +19,5 @@ observer.observe(document.body, {
  childList: true,
  subtree: true
 });
+
+a = 3;
