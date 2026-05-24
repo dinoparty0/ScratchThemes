@@ -3,17 +3,15 @@
   "name": "Student Banner Disabler",
   "version": "1.0",
   "description": "This disables the student de-activation message on Scratch.",
-  "content_scripts": [
-    {
-      "matches": [
-        "https://scratch.mit.edu/*",
-        "https://*.scratch.mit.edu/*",
-        "https://scratch.org/*",
-        "https://*.scratch.org/*"
-      ],
-      "css": ["imports.css"],
-      "run_at": "document_start"
-    }
+  "permissions": [
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://scratch.mit.edu/*",
+    "https://*.scratch.mit.edu/*",
+    "https://scratch.org/*",
+    "https://*.scratch.org/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -21,12 +19,7 @@
   "web_accessible_resources": [
     {
       "resources": ["site-css/*.css"],
-      "matches": [
-        "https://scratch.mit.edu/*",
-        "https://*.scratch.mit.edu/*",
-        "https://scratch.org/*",
-        "https://*.scratch.org/*"
-      ]
+      "matches": ["<all_urls>"]
     }
   ]
 }
