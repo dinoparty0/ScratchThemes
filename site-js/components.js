@@ -9,7 +9,7 @@
     }); 
   }
 
-  removeComponents();
+removeComponents();
 
   let observer = new MutationObserver(function() {
     removeComponents();
