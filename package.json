@@ -1,0 +1,17 @@
+{
+  "name": "scratch-themes",
+  "version": "1.0.0",
+  "description": "Custom styles and scripts for Scratch",
+  "scripts": {
+    "lint:html": "htmlhint \"www/**/*.html\"",
+    "lint:css": "stylelint \"**/*.css\"",
+    "lint:js": "eslint .",
+    "lint": "npm run lint:html && npm run lint:css && npm run lint:js"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "htmlhint": "^1.0.0",
+    "stylelint": "^16.0.0",
+    "stylelint-config-standard": "^36.0.0"
+  }
+}
