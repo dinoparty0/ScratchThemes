@@ -18,7 +18,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["site-css/*.css"],
+      "resources": ["site-css/*.css", "site-js/*.js"],
       "matches": ["<all_urls>"]
     }
   ]
